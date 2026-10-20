@@ -224,3 +224,120 @@ TEST(MatrixModification, OutOfRangeThrows)
     const linalg::Matrix cm(2, 2);
     EXPECT_THROW(cm(2, 0), std::runtime_error);
 }
+
+
+TEST(MatrixArithmetic, UnaryPlus)
+{
+    linalg::Matrix m = { {1, 2} };
+    linalg::Matrix r = +m;
+    EXPECT_EQ(r, m);
+}
+
+TEST(MatrixArithmetic, UnaryMinus)
+{
+    linalg::Matrix m = { {1, -2} };
+    linalg::Matrix r = -m;
+    EXPECT_DOUBLE_EQ(r(0, 0), -1.0);
+    EXPECT_DOUBLE_EQ(r(0, 1), 2.0);
+}
+
+TEST(MatrixArithmetic, Add)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix b = { {5, 6}, {7, 8} };
+    linalg::Matrix r = a + b;
+    EXPECT_DOUBLE_EQ(r(0, 0), 6.0);
+    EXPECT_DOUBLE_EQ(r(1, 1), 12.0);
+}
+
+TEST(MatrixArithmetic, AddAssign)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix b = { {5, 6}, {7, 8} };
+    linalg::Matrix& ref = (a += b);
+    EXPECT_EQ(&ref, &a);
+    EXPECT_DOUBLE_EQ(a(1, 1), 12.0);
+}
+
+TEST(MatrixArithmetic, Subtract)
+{
+    linalg::Matrix a = { {5, 6}, {7, 8} };
+    linalg::Matrix b = { {1, 2}, {3, 4} };
+    linalg::Matrix r = a - b;
+    EXPECT_DOUBLE_EQ(r(0, 0), 4.0);
+    EXPECT_DOUBLE_EQ(r(1, 1), 4.0);
+}
+
+TEST(MatrixArithmetic, SubtractAssign)
+{
+    linalg::Matrix a = { {5, 6}, {7, 8} };
+    linalg::Matrix b = { {1, 2}, {3, 4} };
+    linalg::Matrix& ref = (a -= b);
+    EXPECT_EQ(&ref, &a);
+    EXPECT_DOUBLE_EQ(a(0, 0), 4.0);
+}
+
+TEST(MatrixArithmetic, ScalarMultiplyBothSides)
+{
+    linalg::Matrix m = { {1, 2}, {3, 4} };
+    linalg::Matrix r1 = 2.0 * m;
+    linalg::Matrix r2 = m * 2.0;
+    EXPECT_DOUBLE_EQ(r1(0, 0), 2.0);
+    EXPECT_DOUBLE_EQ(r1(1, 1), 8.0);
+    EXPECT_EQ(r1, r2);
+}
+
+TEST(MatrixArithmetic, ScalarMultiplyAssign)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix& ref = (a *= 3.0);
+    EXPECT_EQ(&ref, &a);
+    EXPECT_DOUBLE_EQ(a(1, 1), 12.0);
+}
+
+TEST(MatrixArithmetic, MatrixMultiply)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix b = { {5, 6}, {7, 8} };
+    linalg::Matrix r = a * b;
+    EXPECT_DOUBLE_EQ(r(0, 0), 19.0);
+    EXPECT_DOUBLE_EQ(r(0, 1), 22.0);
+    EXPECT_DOUBLE_EQ(r(1, 0), 43.0);
+    EXPECT_DOUBLE_EQ(r(1, 1), 50.0);
+}
+
+TEST(MatrixArithmetic, MatrixMultiplyAssign)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix b = { {5, 6}, {7, 8} };
+    linalg::Matrix& ref = (a *= b);
+    EXPECT_EQ(&ref, &a);
+    EXPECT_DOUBLE_EQ(a(0, 0), 19.0);
+}
+
+TEST(MatrixArithmetic, EqualNotEqual)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix b = { {1, 2}, {3, 4} };
+    linalg::Matrix c = { {1, 2}, {3, 5} };
+    EXPECT_TRUE(a == b);
+    EXPECT_TRUE(a != c);
+    EXPECT_FALSE(a == c);
+}
+
+TEST(MatrixArithmetic, ApproximateEquality)
+{
+    linalg::Matrix a = { {0.3} };
+    linalg::Matrix sum = a + a + a;
+    linalg::Matrix nine = { {0.9} };
+    EXPECT_EQ(sum, nine);
+}
+
+TEST(MatrixArithmetic, IncompatibleSizeThrows)
+{
+    linalg::Matrix a(2, 3);
+    linalg::Matrix b(2, 2);
+    EXPECT_THROW(a + b, std::runtime_error);
+    EXPECT_THROW(a * b, std::runtime_error);
+    EXPECT_THROW(a += b, std::runtime_error);
+}
