@@ -1,0 +1,3 @@
+[submodule "gaba-linalg"]
+	path = gaba-linalg
+	url = https://git.miem.hse.ru/gaba-laba-1/gaba-linalg.git
