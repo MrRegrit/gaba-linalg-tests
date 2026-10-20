@@ -1,6 +1,9 @@
 #include <iostream>
 #include <matrix.h>
 
+#include <iostream>
+#include <sstream>
+
 #include <gtest/gtest.h>
 
 
@@ -327,9 +330,9 @@ TEST(MatrixArithmetic, EqualNotEqual)
 
 TEST(MatrixArithmetic, ApproximateEquality)
 {
-    linalg::Matrix a = { {0.3} };
-    linalg::Matrix sum = a + a + a;
-    linalg::Matrix nine = { {0.9} };
+    linalg::Matrix a = { {0.3, 0.3} };
+    linalg::Matrix sum = a * 3;
+    linalg::Matrix nine = { {0.9, 0.9} };
     EXPECT_EQ(sum, nine);
 }
 
@@ -340,4 +343,13 @@ TEST(MatrixArithmetic, IncompatibleSizeThrows)
     EXPECT_THROW(a + b, std::runtime_error);
     EXPECT_THROW(a * b, std::runtime_error);
     EXPECT_THROW(a += b, std::runtime_error);
+}
+
+TEST(MatrixOutput, PrintsAlignedRows)
+{
+    linalg::Matrix m = { {123, 2, 3}, {4, 5, 6} };
+    std::ostringstream ss;
+    ss << m;
+    std::string out = ss.str();
+    EXPECT_EQ(out, "|123   2   3|\n|  4   5   6|\n");
 }
