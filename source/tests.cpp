@@ -711,3 +711,57 @@ TEST(MatrixProperties, IsOrthogonal)
     EXPECT_FALSE(linalg::Matrix({ {1.0, 1.0}, {0.0, 1.0} }).is_orthogonal());
     EXPECT_FALSE(linalg::Matrix({ {1.0, 2.0, 3.0} }).is_orthogonal());
 }
+
+TEST(MatrixFactory, ZerosVectorCreatesColumnVectorWithZeros)
+{
+    auto m = linalg::Matrix::zeros(3);
+    EXPECT_EQ(m.rows(), 3u);
+    EXPECT_EQ(m.columns(), 1u);
+    for (std::size_t i = 0; i < m.rows(); ++i)
+    {
+        EXPECT_DOUBLE_EQ(m(i, 0), 0.0);
+    }
+}
+
+TEST(MatrixFactory, ZerosMatrixCreatesCorrectDimensionsWithAllZeros)
+{
+    auto m = linalg::Matrix::zeros(2, 4);
+    EXPECT_EQ(m.rows(), 2u);
+    EXPECT_EQ(m.columns(), 4u);
+    for (std::size_t i = 0; i < m.rows(); ++i)
+    {
+        for (std::size_t j = 0; j < m.columns(); ++j)
+        {
+            EXPECT_DOUBLE_EQ(m(i, j), 0.0);
+        }
+    }
+}
+
+TEST(MatrixFactory, IdentityCreatesSquareMatrixWithOnesOnDiagonalAndZerosElsewhere)
+{
+    auto m = linalg::Matrix::identity(3);
+    EXPECT_EQ(m.rows(), 3u);
+    EXPECT_EQ(m.columns(), 3u);
+    for (std::size_t i = 0; i < m.rows(); ++i)
+    {
+        for (std::size_t j = 0; j < m.columns(); ++j)
+        {
+            if (i == j)
+            {
+                EXPECT_DOUBLE_EQ(m(i, j), 1.0);
+            }
+            else
+            {
+                EXPECT_DOUBLE_EQ(m(i, j), 0.0);
+            }
+        }
+    }
+}
+
+TEST(MatrixFactory, IdentityZeroSizeCreatesEmptyMatrix)
+{
+    auto m = linalg::Matrix::identity(0);
+    EXPECT_EQ(m.rows(), 0u);
+    EXPECT_EQ(m.columns(), 0u);
+    EXPECT_TRUE(m.empty());
+}
