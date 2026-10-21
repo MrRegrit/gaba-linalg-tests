@@ -353,3 +353,156 @@ TEST(MatrixOutput, PrintsAlignedRows)
     std::string out = ss.str();
     EXPECT_EQ(out, "|123   2   3|\n|  4   5   6|\n");
 }
+
+TEST(MatrixComputations, Norm)
+{
+    linalg::Matrix m = { {3, 4} };
+    EXPECT_DOUBLE_EQ(m.norm(), 5.0);
+}
+
+TEST(MatrixComputations, Trace)
+{
+    linalg::Matrix m = { {1, 2}, {3, 4} };
+    EXPECT_DOUBLE_EQ(m.trace(), 5.0);
+}
+
+TEST(MatrixComputations, TraceNonSquareThrows)
+{
+    linalg::Matrix m(2, 3);
+    EXPECT_THROW(m.trace(), std::runtime_error);
+}
+
+TEST(MatrixComputations, Determinant)
+{
+    linalg::Matrix m = { {1, 2}, {3, 4} };
+    EXPECT_DOUBLE_EQ(m.det(), -2.0);
+}
+
+TEST(MatrixComputations, DeterminantSingular)
+{
+    linalg::Matrix m = { {1, 2}, {2, 4} }; // вырожденная
+    EXPECT_DOUBLE_EQ(m.det(), 0.0);
+}
+
+TEST(MatrixComputations, Rank)
+{
+    linalg::Matrix m = { {1, 2, 3}, {2, 4, 6}, {0, 1, 1} };
+    EXPECT_EQ(m.rank(), 2u);
+}
+
+TEST(MatrixComputations, GaussForwardDoesNotChangeArgumentInDet)
+{
+    // det и rank не должны менять исходную матрицу
+    linalg::Matrix m = { {1, 2}, {3, 4} };
+    linalg::Matrix original = m;
+    m.det();
+    m.rank();
+    EXPECT_EQ(m, original);
+}
+
+TEST(MatrixComputations, Concatenate)
+{
+    linalg::Matrix a = { {1, 2}, {3, 4} };
+    linalg::Matrix b = { {5}, {6} };
+    linalg::Matrix r = concatenate(a, b);
+    EXPECT_EQ(r.rows(), 2u);
+    EXPECT_EQ(r.columns(), 3u);
+    EXPECT_DOUBLE_EQ(r(0, 2), 5.0);
+    EXPECT_DOUBLE_EQ(r(1, 2), 6.0);
+}
+
+TEST(MatrixComputations, Transpose)
+{
+    linalg::Matrix m = { {1, 2, 3}, {4, 5, 6} };
+    linalg::Matrix t = transpose(m);
+    EXPECT_EQ(t.rows(), 3u);
+    EXPECT_EQ(t.columns(), 2u);
+    EXPECT_DOUBLE_EQ(t(2, 1), 6.0);
+    // Исходная матрица не меняется
+    EXPECT_EQ(m.rows(), 2u);
+    EXPECT_EQ(m.columns(), 3u);
+}
+
+TEST(MatrixComputations, Invert)
+{
+    linalg::Matrix m = { {4, 7}, {2, 6} };
+    linalg::Matrix inv = invert(m);
+    // m * inv = E
+    linalg::Matrix prod = m * inv;
+    EXPECT_NEAR(prod(0, 0), 1.0, 1e-9);
+    EXPECT_NEAR(prod(0, 1), 0.0, 1e-9);
+    EXPECT_NEAR(prod(1, 0), 0.0, 1e-9);
+    EXPECT_NEAR(prod(1, 1), 1.0, 1e-9);
+    // Исходная матрица не меняется
+    EXPECT_EQ(m(0, 0), 4.0);
+}
+
+TEST(MatrixComputations, InvertSingularThrows)
+{
+    linalg::Matrix m = { {1, 2}, {2, 4} };
+    EXPECT_THROW(invert(m), std::runtime_error);
+}
+
+TEST(MatrixComputations, PowerZeroIdentity)
+{
+    // A^0 = E
+    linalg::Matrix m = { {1, 2}, {3, 4} };
+    linalg::Matrix p = power(m, 0);
+    EXPECT_DOUBLE_EQ(p(0, 0), 1.0);
+    EXPECT_DOUBLE_EQ(p(0, 1), 0.0);
+    EXPECT_DOUBLE_EQ(p(1, 0), 0.0);
+    EXPECT_DOUBLE_EQ(p(1, 1), 1.0);
+}
+
+TEST(MatrixComputations, PowerPositive)
+{
+    linalg::Matrix m = { {1, 1}, {1, 0} };
+    linalg::Matrix p = power(m, 2);
+    // m^2 = [[2,1],[1,1]]
+    EXPECT_DOUBLE_EQ(p(0, 0), 2.0);
+    EXPECT_DOUBLE_EQ(p(0, 1), 1.0);
+    EXPECT_DOUBLE_EQ(p(1, 0), 1.0);
+    EXPECT_DOUBLE_EQ(p(1, 1), 1.0);
+}
+
+TEST(MatrixComputations, TransposeInverseCommutativity)
+{
+    // (A^T)^-1 = (A^-1)^T
+    linalg::Matrix m = { {4, 7}, {2, 6} };
+    linalg::Matrix lhs = invert(transpose(m));
+    linalg::Matrix rhs = transpose(invert(m));
+    EXPECT_EQ(lhs, rhs);
+}
+
+TEST(MatrixComputations, InverseOfProduct)
+{
+    // (A1 * A2)^-1 = A2^-1 * A1^-1
+    linalg::Matrix a1 = { {4, 7}, {2, 6} };
+    linalg::Matrix a2 = { {3, 1}, {5, 2} };
+    linalg::Matrix lhs = invert(a1 * a2);
+    linalg::Matrix rhs = invert(a2) * invert(a1);
+    EXPECT_EQ(lhs, rhs);
+}
+
+TEST(MatrixComputations, InversePower)
+{
+    // (A^-1)^6 = (A^-2)^3
+    linalg::Matrix m = { {4, 7}, {2, 6} };
+    linalg::Matrix lhs = power(invert(m), 6);
+    linalg::Matrix rhs = power(power(invert(m), 2), 3);
+    EXPECT_EQ(lhs, rhs);
+}
+
+TEST(MatrixComputations, Solve)
+{
+        // Решаем систему A*x = f
+    linalg::Matrix a = { {3, 1}, {1, 2} };
+    linalg::Matrix f = { {9}, {8} };
+    linalg::Matrix x = solve(a, f);
+        // Решение x = [2, 3]
+    EXPECT_NEAR(x(0, 0), 2.0, 1e-9);
+    EXPECT_NEAR(x(1, 0), 3.0, 1e-9);
+    // A и f не меняются
+    EXPECT_DOUBLE_EQ(a(0, 0), 3.0);
+    EXPECT_DOUBLE_EQ(f(0, 0), 9.0);
+}
