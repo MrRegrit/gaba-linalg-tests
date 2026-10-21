@@ -506,3 +506,208 @@ TEST(MatrixComputations, Solve)
     EXPECT_DOUBLE_EQ(a(0, 0), 3.0);
     EXPECT_DOUBLE_EQ(f(0, 0), 9.0);
 }
+
+// ==================== ДОПы ====================
+
+TEST(MatrixAccess, SquareBracketRead)
+{
+    linalg::Matrix m = { {1.0, 2.0, 3.0}, {4.0, 5.0, 6.0} };
+    EXPECT_DOUBLE_EQ(m[0][1], 2.0);   // 1-я строка, 2-й столбец
+    EXPECT_DOUBLE_EQ(m[1][2], 6.0);
+    EXPECT_DOUBLE_EQ(m[1][0], 4.0);
+}
+
+TEST(MatrixAccess, SquareBracketWrite)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    m[0][1] = 10.0;
+    m[1][1] = -7.0;
+    EXPECT_DOUBLE_EQ(m(0, 1), 10.0);
+    EXPECT_DOUBLE_EQ(m(1, 1), -7.0);
+}
+
+TEST(MatrixAccess, SquareBracketMatchesCallOperator)
+{
+    linalg::Matrix m = { {1.0, 2.0, 3.0}, {4.0, 5.0, 6.0} };
+    EXPECT_DOUBLE_EQ(m[0][0], m(0, 0));
+    EXPECT_DOUBLE_EQ(m[1][2], m(1, 2));
+    m[0][2] = 100.0;
+    EXPECT_DOUBLE_EQ(m(0, 2), 100.0);
+}
+
+TEST(MatrixAccess, SquareBracketConst)
+{
+    const linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_DOUBLE_EQ(m[1][0], 3.0);
+    EXPECT_DOUBLE_EQ(m[0][1], 2.0);
+}
+
+TEST(MatrixAccess, SquareBracketOutOfRangeRowThrows)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_THROW(m[5][0], std::runtime_error);
+    const linalg::Matrix cm = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_THROW(cm[5][0], std::runtime_error);
+}
+
+TEST(MatrixAccess, SquareBracketOutOfRangeColumnThrows)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_THROW(m[0][5], std::runtime_error);
+    const linalg::Matrix cm = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_THROW(cm[0][5], std::runtime_error);
+}
+
+TEST(MatrixExtraMath, Minor2x2)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    // minor = определитель подматрицы без строки и столбца
+    EXPECT_DOUBLE_EQ(m.minor(0, 0), 4.0);
+    EXPECT_DOUBLE_EQ(m.minor(0, 1), 3.0);
+    EXPECT_DOUBLE_EQ(m.minor(1, 0), 2.0);
+    EXPECT_DOUBLE_EQ(m.minor(1, 1), 1.0);
+}
+
+TEST(MatrixExtraMath, MinorThrowsOnNonSquareOrSize1)
+{
+    linalg::Matrix non_square = { {1.0, 2.0, 3.0} };
+    EXPECT_THROW(non_square.minor(0, 0), std::runtime_error);
+
+    linalg::Matrix one = { {5.0} };
+    EXPECT_THROW(one.minor(0, 0), std::runtime_error);
+}
+
+TEST(MatrixExtraMath, MinorOutOfRangeThrows)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_THROW(m.minor(5, 0), std::runtime_error);
+    EXPECT_THROW(m.minor(0, 5), std::runtime_error);
+}
+
+TEST(MatrixExtraMath, Cofactor2x2)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    // cofactor = (-1)^(r+c) * minor
+    EXPECT_DOUBLE_EQ(m.cofactor(0, 0), 4.0);
+    EXPECT_DOUBLE_EQ(m.cofactor(0, 1), -3.0);
+    EXPECT_DOUBLE_EQ(m.cofactor(1, 0), -2.0);
+    EXPECT_DOUBLE_EQ(m.cofactor(1, 1), 1.0);
+}
+
+TEST(MatrixExtraMath, AdjugateRelationWithDetAndInverse)
+{
+    linalg::Matrix m = { {4.0, 7.0}, {2.0, 6.0} };
+    // adj(A) = det(A) * A^-1
+    linalg::Matrix adj = m.adjugate();
+    linalg::Matrix expected = m.det() * invert(m);
+    EXPECT_EQ(adj, expected);
+}
+
+TEST(MatrixExtraMath, AdjugateProduct)
+{
+    // A * adj(A) = det(A) * E
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    linalg::Matrix prod = m * m.adjugate();
+    EXPECT_NEAR(prod(0, 0), m.det(), 1e-9);
+    EXPECT_NEAR(prod(0, 1), 0.0, 1e-9);
+    EXPECT_NEAR(prod(1, 0), 0.0, 1e-9);
+    EXPECT_NEAR(prod(1, 1), m.det(), 1e-9);
+}
+
+TEST(MatrixExtraMath, AdjugateNonSquareThrows)
+{
+    linalg::Matrix m = { {1.0, 2.0, 3.0} };
+    EXPECT_THROW(m.adjugate(), std::runtime_error);
+}
+
+TEST(MatrixExtraMath, Sum)
+{
+    linalg::Matrix m = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_DOUBLE_EQ(m.sum(), 10.0);
+}
+
+TEST(MatrixExtraMath, SumSingleElement)
+{
+    linalg::Matrix m = { {5.0} };
+    EXPECT_DOUBLE_EQ(m.sum(), 5.0);
+}
+
+TEST(MatrixExtraMath, Min)
+{
+    linalg::Matrix m = { {4.0, -2.0, 7.0}, {1.0, 9.0, -3.0} };
+    EXPECT_DOUBLE_EQ(m.min(), -3.0);
+}
+
+TEST(MatrixExtraMath, MinEmptyThrows)
+{
+    linalg::Matrix m;
+    EXPECT_THROW(m.min(), std::runtime_error);
+}
+
+TEST(MatrixExtraMath, Max)
+{
+    linalg::Matrix m = { {4.0, -2.0, 7.0}, {1.0, 9.0, -3.0} };
+    EXPECT_DOUBLE_EQ(m.max(), 9.0);
+}
+
+TEST(MatrixExtraMath, MaxEmptyThrows)
+{
+    linalg::Matrix m;
+    EXPECT_THROW(m.max(), std::runtime_error);
+}
+
+TEST(MatrixExtraMath, Dot)
+{
+    linalg::Matrix a = { {1.0, 2.0}, {3.0, 4.0} };
+    linalg::Matrix b = { {1.0, 0.0}, {0.0, 1.0} };
+    // 1*1 + 2*0 + 3*0 + 4*1 = 5
+    EXPECT_DOUBLE_EQ(a.dot(b), 5.0);
+}
+
+TEST(MatrixExtraMath, DotWithItselfEqualsSquaredNorm)
+{
+    linalg::Matrix m = { {3.0, 4.0} };
+    double n = m.norm();
+    EXPECT_DOUBLE_EQ(m.dot(m), n * n);
+}
+
+TEST(MatrixExtraMath, DotDifferentSizeThrows)
+{
+    linalg::Matrix a = { {1.0, 2.0} };
+    linalg::Matrix b = { {1.0, 2.0}, {3.0, 4.0} };
+    EXPECT_THROW(a.dot(b), std::runtime_error);
+}
+
+TEST(MatrixProperties, IsSquare)
+{
+    EXPECT_TRUE(linalg::Matrix({ {1.0, 2.0}, {3.0, 4.0} }).is_square());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 2.0, 3.0} }).is_square());
+    EXPECT_FALSE(linalg::Matrix(2, 3).is_square());
+    EXPECT_TRUE(linalg::Matrix(0, 0).is_square());
+}
+
+TEST(MatrixProperties, IsSymmetric)
+{
+    EXPECT_TRUE(linalg::Matrix({ {1.0, 2.0}, {2.0, 1.0} }).is_symmetric());
+    EXPECT_TRUE(linalg::Matrix({ {5.0} }).is_symmetric());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 2.0}, {3.0, 4.0} }).is_symmetric());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 2.0, 3.0} }).is_symmetric());
+}
+
+TEST(MatrixProperties, IsIdentity)
+{
+    EXPECT_TRUE(linalg::Matrix({ {1.0, 0.0}, {0.0, 1.0} }).is_identity());
+    EXPECT_TRUE(linalg::Matrix({ {1.0} }).is_identity());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 1.0}, {0.0, 1.0} }).is_identity());
+    EXPECT_FALSE(linalg::Matrix({ {2.0, 0.0}, {0.0, 1.0} }).is_identity());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 2.0, 3.0} }).is_identity());
+}
+
+TEST(MatrixProperties, IsOrthogonal)
+{
+    // матрица поворота на 90°: A * A^T = E
+    EXPECT_TRUE(linalg::Matrix({ {0.0, 1.0}, {-1.0, 0.0} }).is_orthogonal());
+    EXPECT_TRUE(linalg::Matrix({ {1.0, 0.0}, {0.0, 1.0} }).is_orthogonal());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 1.0}, {0.0, 1.0} }).is_orthogonal());
+    EXPECT_FALSE(linalg::Matrix({ {1.0, 2.0, 3.0} }).is_orthogonal());
+}
