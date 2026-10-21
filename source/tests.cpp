@@ -137,6 +137,14 @@ TEST(MatrixConstructors, CopyAssignmentReusesCapacity)
     EXPECT_EQ(m1, m2);
 }
 
+TEST(MatrixConstructors, CopyAssignmentIntoEmptyMatrix)
+{
+    linalg::Matrix m1;
+    linalg::Matrix m2 = { {1, 2}, {3, 4} };
+    m1 = m2;
+    EXPECT_EQ(m1, m2);
+}
+
 // ==================== ПУНКТ 4: модификация ====================
 
 TEST(MatrixModification, Reshape)
@@ -146,6 +154,25 @@ TEST(MatrixModification, Reshape)
     EXPECT_EQ(m.rows(), 6u);
     EXPECT_EQ(m.columns(), 1u);
     EXPECT_EQ(m.capacity(), 6u);
+}
+
+TEST(MatrixModification, ReshapeEmptyGrowsWithoutHang)
+{
+    linalg::Matrix m;
+    m.reshape(3, 3);
+    EXPECT_EQ(m.rows(), 3u);
+    EXPECT_EQ(m.columns(), 3u);
+    EXPECT_GE(m.capacity(), 9u);
+}
+
+TEST(MatrixModification, ReshapeSmallerKeepsCapacity)
+{
+    linalg::Matrix m(10, 10);
+    std::size_t cap = m.capacity();
+    m.reshape(2, 2);
+    EXPECT_EQ(m.rows(), 2u);
+    EXPECT_EQ(m.columns(), 2u);
+    EXPECT_EQ(m.capacity(), cap);
 }
 
 TEST(MatrixModification, Reserve)

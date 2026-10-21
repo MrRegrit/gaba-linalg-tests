@@ -9,7 +9,7 @@
 - `gaba-linalg` — подпроект-библиотека `LinAlgLib`, которая тестируется (подключается через `add_subdirectory`).
 - `source/tests.cpp` — все тесты на GoogleTest для класса `linalg::Matrix`.
 
-GoogleTest подтягивается автоматически через `FetchContent` из указанного в `CmakeLists.txt` архива, поэтому отдельная установка gtest не требуется.
+GoogleTest подтягивается автоматически через `FetchContent` из указанного в `CMakeLists.txt` архива, поэтому отдельная установка gtest не требуется.
 
 ## Требования
 
@@ -47,7 +47,7 @@ cmake --build .
 
 ```
 gaba-tests
-├── CmakeLists.txt        # цель MatrixTests, подключение LinAlgLib и GoogleTest
+├── CMakeLists.txt        # цель MatrixTests, подключение LinAlgLib и GoogleTest
 ├── source/tests.cpp      # исходный код всех тестов
 └── gaba-linalg/          # тестируемая библиотека (см. её собственный README)
 ```
