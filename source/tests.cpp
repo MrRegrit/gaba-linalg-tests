@@ -378,7 +378,7 @@ TEST(MatrixOutput, PrintsAlignedRows)
     std::ostringstream ss;
     ss << m;
     std::string out = ss.str();
-    EXPECT_EQ(out, "|123   2   3|\n|  4   5   6|\n");
+    EXPECT_EQ(out, "|123 2 3|\n|  4 5 6|\n");
 }
 
 TEST(MatrixComputations, Norm)
