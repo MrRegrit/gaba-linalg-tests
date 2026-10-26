@@ -1,0 +1,25 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 90
+
+# Запрещает упаковывать короткие функции в одну строку (например, void foo() { return; })
+AllowShortFunctionsOnASingleLine: None
+
+# Запрещает упаковывать короткие блоки (if, while) в одну строку
+AllowShortBlocksOnASingleLine: false
+
+# Запрещает упаковывать короткие if-выражения в одну строку
+AllowShortIfStatementsOnASingleLine: false
+
+# Добавляет пробелы внутри фигурных скобок при инициализации (например, { 1, 2, 3 } вместо {1, 2, 3})
+Cpp11BracedListStyle: false
+
+# Добавляет отступы (пробелы) внутри вложенных пространств имен (namespaces)
+NamespaceIndentation: All
+
+# Разделяет фигурные скобки и переносит их на новую строку (Стиль Allman / Visual Studio)
+# Это визуально очень сильно "разлепляет" блоки кода
+BreakBeforeBraces: Allman
+
+
+FixNamespaceComments: false
