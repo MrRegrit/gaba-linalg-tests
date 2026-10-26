@@ -1,4 +1,4 @@
-# gaba-tests
+# gaba-linalg-tests
 
 Набор модульных тестов для библиотеки линейной алгебры [gaba-linalg](gaba-linalg/README.md). Использует GoogleTest (gtest) и исполняемую цель `MatrixTests`.
 
@@ -46,7 +46,7 @@ cmake --build .
 ## Структура проекта
 
 ```
-gaba-tests
+gaba-linalg-tests
 ├── CMakeLists.txt        # цель MatrixTests, подключение LinAlgLib и GoogleTest
 ├── source/tests.cpp      # исходный код всех тестов
 └── gaba-linalg/          # тестируемая библиотека (см. её собственный README)
